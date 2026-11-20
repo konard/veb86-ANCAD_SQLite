@@ -1,0 +1,26 @@
+<Project DefaultTargets="Package">
+  <Import Project="../Directory.Build.props" />
+  <PropertyGroup>
+    <Root>$(MSBuildThisFileDirectory)../</Root>
+    <Artifacts>$(Root)artifacts/</Artifacts>
+    <BuildOutput>$(Root)src/AcadDevices.DbEditor/bin/x64/Release/</BuildOutput>
+    <Stage>$(Artifacts)manual-install/</Stage>
+    <Bundle>$(Stage)ANCAD_SQLite.bundle/</Bundle>
+    <Archive>$(Artifacts)ANCAD_SQLite-manual-install-v$(Version).zip</Archive>
+  </PropertyGroup>
+  <ItemGroup>
+    <Binary Include="AcadDevices.DbEditor.dll;AcadDevices.Core.dll;System.Data.SQLite.dll;x64/SQLite.Interop.dll" />
+  </ItemGroup>
+  <Target Name="Package">
+    <Error Condition="!Exists('$(BuildOutput)%(Binary.Identity)')"
+           Text="Missing %(Binary.Identity). Build AcadDevices.sln in Release/x64 before packaging." />
+    <RemoveDir Directories="$(Stage)" />
+    <Copy SourceFiles="@(Binary->'$(BuildOutput)%(Identity)')"
+          DestinationFiles="@(Binary->'$(Bundle)Contents/Win64/%(Identity)')" />
+    <Copy SourceFiles="$(Root)packaging/PackageContents.xml" DestinationFolder="$(Bundle)" />
+    <XmlPoke XmlInputPath="$(Bundle)PackageContents.xml" Query="/ApplicationPackage/@AppVersion" Value="$(Version)" />
+    <Copy SourceFiles="$(Root)packaging/INSTALL.md" DestinationFolder="$(Stage)" />
+    <ZipDirectory SourceDirectory="$(Stage)" DestinationFile="$(Archive)" Overwrite="true" />
+    <Message Importance="high" Text="Packaged $(Archive)" />
+  </Target>
+</Project>
