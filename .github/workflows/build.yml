@@ -1,0 +1,72 @@
+name: Build and release
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Build, test and package x64
+    runs-on: windows-2025
+    timeout-minutes: 12
+    outputs:
+      version: ${{ steps.archive.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Build plugin and integration checks
+        run: dotnet build tests/AcadDevices.Tests/AcadDevices.Tests.csproj -c Release -p:Platform=x64 --nologo
+      - name: Run SQLite and WinForms checks
+        timeout-minutes: 2
+        shell: pwsh
+        run: ./tests/AcadDevices.Tests/bin/x64/Release/AcadDevices.Tests.exe
+      - name: Package and verify manual-install ZIP
+        id: archive
+        shell: pwsh
+        run: |
+          dotnet msbuild scripts/Package.proj -nologo
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $archive = Get-ChildItem artifacts/ANCAD_SQLite-manual-install-v*.zip
+          python tests/verify_package.py $archive.FullName
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $version = ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.Version
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manual-install
+          path: artifacts/ANCAD_SQLite-manual-install-v*.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish manual-install ZIP
+    needs: verify
+    if: github.repository == 'veb86/ANCAD_SQLite' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    concurrency:
+      group: publish-ancad-sqlite
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: manual-install
+          path: dist
+      - name: Publish release if this version is new
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          tag="v$VERSION"
+          if gh release view "$tag" > /dev/null 2>&1; then
+            exit 0
+          fi
+          gh release create "$tag" "dist/ANCAD_SQLite-manual-install-$tag.zip" \
+            --title "ANCAD SQLite $tag" --target "$GITHUB_SHA" --generate-notes
