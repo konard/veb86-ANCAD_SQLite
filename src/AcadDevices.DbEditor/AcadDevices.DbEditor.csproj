@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <InternalsVisibleTo Include="AcadDevices.Tests" />
+    <ProjectReference Include="../AcadDevices.Core/AcadDevices.Core.csproj" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <PackageReference Include="AutoCAD.NET" Version="[23.1.0]" ExcludeAssets="all"
+                      GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="AutoCAD.NET.Core" Version="[23.1.0]" ExcludeAssets="all"
+                      GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="AutoCAD.NET.Model" Version="[23.1.0]" ExcludeAssets="all"
+                      GeneratePathProperty="true" PrivateAssets="all" />
+    <Reference Include="AcCoreMgd">
+      <HintPath>$(PkgAutoCAD_NET_Core)/lib/net47/AcCoreMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="AcDbMgd">
+      <HintPath>$(PkgAutoCAD_NET_Model)/lib/net47/AcDbMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="AcMgd">
+      <HintPath>$(PkgAutoCAD_NET)/lib/net47/AcMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

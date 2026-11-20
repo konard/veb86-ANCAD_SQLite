@@ -1,0 +1,9 @@
+<Project>
+  <ItemGroup>
+    <PackageReference Include="Stub.System.Data.SQLite.Core.NetFramework" Version="1.0.119"
+                      GeneratePathProperty="true" />
+    <None Include="$(PkgStub_System_Data_SQLite_Core_NetFramework)/build/net46/x64/SQLite.Interop.dll"
+          Link="x64/SQLite.Interop.dll" CopyToOutputDirectory="PreserveNewest"
+          Condition="'$(PkgStub_System_Data_SQLite_Core_NetFramework)' != ''" />
+  </ItemGroup>
+</Project>
