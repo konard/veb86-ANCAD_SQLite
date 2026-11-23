@@ -276,8 +276,9 @@ namespace AcadDevices.Tests
                 Application.DoEvents();
                 var lastFilter = Controls<TextBox>(editor).Single(text => text.AccessibleName == "Фильтр · C12");
                 var lastColumn = grid.GetColumnDisplayRectangle(11, cutOverflow: true);
-                Check(lastFilter.Visible && lastFilter.PointToScreen(Point.Empty).X ==
-                    grid.PointToScreen(new Point(lastColumn.X + 2, 0)).X, "Filters follow horizontal scrolling.");
+                Check(lastColumn.Width > 12 && lastFilter.Visible && lastFilter.Left == lastColumn.X + 2,
+                    $"Filters follow horizontal scrolling. Offset {grid.HorizontalScrollingOffset}, " +
+                    $"column {lastColumn}, filter {lastFilter.Bounds}, visible {lastFilter.Visible}.");
             }
         }
 

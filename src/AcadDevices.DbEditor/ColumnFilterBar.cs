@@ -12,6 +12,7 @@ namespace AcadDevices.DbEditor
         private readonly ToolTip toolTip;
         private readonly Dictionary<DataGridViewColumn, TextBox> inputs = new Dictionary<DataGridViewColumn, TextBox>();
         private bool clearing;
+        private bool alignmentQueued;
 
         internal ColumnFilterBar(DataGridView grid, ToolTip toolTip)
         {
@@ -19,10 +20,14 @@ namespace AcadDevices.DbEditor
             this.toolTip = toolTip;
             Dock = DockStyle.Fill;
             Margin = new Padding(0, 0, 0, 4);
-            grid.ColumnWidthChanged += (sender, args) => AlignInputs();
-            grid.Scroll += (sender, args) => AlignInputs();
-            grid.Layout += (sender, args) => AlignInputs();
-            grid.SizeChanged += (sender, args) => AlignInputs();
+            grid.ColumnWidthChanged += (sender, args) => QueueAlignment();
+            grid.Scroll += (sender, args) =>
+            {
+                if (args.ScrollOrientation == ScrollOrientation.HorizontalScroll)
+                    QueueAlignment();
+            };
+            grid.Layout += (sender, args) => QueueAlignment();
+            grid.SizeChanged += (sender, args) => QueueAlignment();
         }
 
         internal event EventHandler FiltersChanged;
@@ -82,6 +87,20 @@ namespace AcadDevices.DbEditor
                 if (rectangle.Width > 12)
                     pair.Value.Bounds = new Rectangle(rectangle.X + 2, 0, rectangle.Width - 4, Height);
             }
+        }
+
+        private void QueueAlignment()
+        {
+            if (alignmentQueued || !IsHandleCreated)
+                return;
+
+            // The grid raises Scroll before it updates which columns are displayed.
+            alignmentQueued = true;
+            BeginInvoke((Action)(() =>
+            {
+                alignmentQueued = false;
+                AlignInputs();
+            }));
         }
 
         protected override void OnSizeChanged(EventArgs e)
