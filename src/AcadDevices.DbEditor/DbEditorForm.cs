@@ -340,6 +340,7 @@ namespace AcadDevices.DbEditor
         {
             var previousValues = keepFilters ? filters.Values.ToDictionary(pair => pair.Key, pair => pair.Value)
                 : new Dictionary<string, string>();
+            filters.RemoveInputs();
             grid.DataSource = null;
             rows.DataSource = null;
             grid.Columns.Clear();
@@ -514,7 +515,7 @@ namespace AcadDevices.DbEditor
         private void SetStatus(string message, bool isError = false)
         {
             statusIsError = isError;
-            status.Text = message;
+            status.Text = message?.Replace("\r\n", " · ").Replace('\r', ' ').Replace('\n', ' ');
             status.ForeColor = isError ? theme.Error : theme.Text;
             toolTip.SetToolTip(status, message);
         }

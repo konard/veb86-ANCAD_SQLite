@@ -213,6 +213,8 @@ namespace AcadDevices.Tests
                 var persisted = database.LoadTable("UiTable").Data.Rows;
                 Check(persisted.Count == 1 && (string)persisted[0]["Название"] == "Клапан А-02",
                     "Save commits the pending cell value and row.");
+                Check(grid.Columns.Count == 3 && grid.Rows.Count == 1 && status.Text == "Изменения сохранены",
+                    $"Save rebuilds the editable grid. Editor status was «{status.Text}».");
 
                 var nameFilter = Controls<TextBox>(editor).Single(text => text.AccessibleName == "Фильтр · Название");
                 var quantityFilter = Controls<TextBox>(editor).Single(text => text.AccessibleName == "Фильтр · Количество");

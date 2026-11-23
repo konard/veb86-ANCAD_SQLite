@@ -30,7 +30,7 @@ namespace AcadDevices.DbEditor
         internal IEnumerable<KeyValuePair<string, string>> Values => inputs.Select(pair =>
             new KeyValuePair<string, string>(pair.Key.DataPropertyName, pair.Value.Text));
 
-        internal void Rebuild(IReadOnlyDictionary<string, string> previousValues)
+        internal void RemoveInputs()
         {
             foreach (var input in inputs.Values)
             {
@@ -38,7 +38,10 @@ namespace AcadDevices.DbEditor
                 input.Dispose();
             }
             inputs.Clear();
+        }
 
+        internal void Rebuild(IReadOnlyDictionary<string, string> previousValues)
+        {
             foreach (DataGridViewColumn column in grid.Columns)
             {
                 var name = $"Фильтр · {column.HeaderText}";
@@ -71,7 +74,7 @@ namespace AcadDevices.DbEditor
         {
             foreach (var pair in inputs)
             {
-                if (pair.Key.Index < 0)
+                if (pair.Key.Index < 0 || pair.Key.Index >= grid.Columns.Count)
                     continue;
 
                 var rectangle = grid.GetColumnDisplayRectangle(pair.Key.Index, cutOverflow: true);
