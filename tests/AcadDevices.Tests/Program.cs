@@ -298,6 +298,11 @@ namespace AcadDevices.Tests
                     "CREATE VIEW \"К заказу\" AS SELECT Название, Модель FROM Оборудование WHERE Количество = 0");
                 using (var editor = new DbEditorForm())
                 {
+                    var desktop = Screen.PrimaryScreen.WorkingArea;
+                    editor.StartPosition = FormStartPosition.Manual;
+                    editor.Location = new Point(desktop.Left + 8, desktop.Top + 8);
+                    editor.Size = new Size(Math.Min(editor.Width, desktop.Width - 16),
+                        Math.Min(editor.Height, desktop.Height - 16));
                     editor.SetDatabase(database);
                     var sql = Controls<TextBox>(editor).Single(text => text.AccessibleName == "SQL-запрос");
                     sql.Text = "SELECT Название, Модель, Количество\r\nFROM Оборудование\r\nWHERE Количество > 0;";
